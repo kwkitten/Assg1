@@ -8,6 +8,7 @@ TagManager:
   - Collectable
   - Health
   - Hazard
+  - Door
   layers:
   - Default
   - TransparentFX
