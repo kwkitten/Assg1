@@ -3,7 +3,6 @@ using UnityEngine;
 public class RecoveryBehaviour : MonoBehaviour
 {
     // Amount of health to recover
-    [SerializeField]
     int healAmount = 5;
 
     // Method to recover health
