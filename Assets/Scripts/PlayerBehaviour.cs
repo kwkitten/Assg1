@@ -11,6 +11,16 @@ public class PlayerBehaviour : MonoBehaviour
     bool canInteract = false;
     public int playerScore = 0;
 
+    [SerializeField] // exposed variable
+    GameObject projectile;
+
+    [SerializeField]
+    Transform spawnPoint;
+
+    [SerializeField]
+    float fireStrength = 1000f;
+
+
     void OnCollisionEnter(Collision collision)
     {
         Debug.Log("Player collided with: " + collision.gameObject.name);
@@ -43,7 +53,7 @@ public class PlayerBehaviour : MonoBehaviour
                 // Pass the player object as an argument
                 currentCoin.Collect(this);
             }
-            else if(currentDoor != null)
+            else if (currentDoor != null)
             {
                 Debug.Log("Player is interacting with a door");
                 currentDoor.Interact();
@@ -149,4 +159,21 @@ public class PlayerBehaviour : MonoBehaviour
             }
         }
     }
+
+    void OnFire()
+    {
+        // Instantiate projectile at the spawn point's position and rotation
+        // Store the projectile to the 'newProjectile' variable
+        GameObject newProjectile = Instantiate(projectile, spawnPoint.position, spawnPoint.rotation);
+
+        // Create a new Vector3 variable 'fireForce'
+        // set it to the forward direction of the spawn point muiltipled by the fire strength
+        // This will determine the direction and speed of the projectile
+        Vector3 fireForce = spawnPoint.forward * fireStrength;
+
+        // Get the Rigidbody component of the new projectile
+        // Add a force to the projectile defined by the fireForce variable
+        newProjectile.GetComponent<Rigidbody>().AddForce(fireForce);
+    }
+
 }
