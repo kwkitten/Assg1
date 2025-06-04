@@ -20,6 +20,54 @@ public class PlayerBehaviour : MonoBehaviour
     [SerializeField]
     float fireStrength = 1000f;
 
+    [SerializeField]
+    float interactionDistance = 5f;
+
+    void Update()
+    {
+        RaycastHit hitinfo;
+
+        if ((Physics.Raycast(spawnPoint.position, spawnPoint.forward, out hitinfo, interactionDistance)))
+        {
+            // If the raycast hits an object tagged as "Collectable" or "Door"
+            if (hitinfo.collider.CompareTag("Collectable"))
+            {
+                // Get the CoinBehaviour component from the hit object
+                // This allows the player to interact with the coin
+                // The CoinBehaviour script should handle the logic for collecting the coin
+                if (currentCoin != null)
+                {
+                    // If the player is already interacting with a coin, we can highlight it
+                    currentCoin.unhighlightCoin(); // Assuming this method exists to unhighlight the previous coin
+                }
+                canInteract = true;
+                currentCoin = hitinfo.collider.GetComponent<CoinBehaviour>();
+                currentCoin.highlightCoin(); // Assuming this method exists to highlight the coin
+            }
+            else if (hitinfo.collider.CompareTag("Door"))
+            {
+                currentDoor = hitinfo.collider.GetComponent<DoorBehaviour>();
+                canInteract = true;
+            }
+        }
+        else if (currentCoin != null || currentDoor != null)
+        {
+            // If the raycast does not hit any object, reset the interaction state
+            // This prevents the player from interacting with a coin or door that is no longer in range
+            if (currentCoin != null)
+            {
+                currentCoin = null; // Reset current coin after interaction
+                canInteract = false; // Reset interaction state
+                currentCoin.unhighlightCoin(); // Assuming this method exists to unhighlight the coin
+            }
+            if (currentDoor != null)
+            {
+                //currentDoor.unhighlightDoor(); // Assuming this method exists to unhighlight the door
+                currentDoor = null; // Reset current door after interaction
+                canInteract = false; // Reset interaction state
+            }
+        }
+    }
 
     void OnCollisionEnter(Collision collision)
     {
@@ -52,6 +100,7 @@ public class PlayerBehaviour : MonoBehaviour
                 // Call the Collect method on the coin object
                 // Pass the player object as an argument
                 currentCoin.Collect(this);
+                currentCoin = null; // Reset current coin after interaction
             }
             else if (currentDoor != null)
             {

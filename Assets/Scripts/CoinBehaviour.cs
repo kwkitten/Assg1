@@ -2,10 +2,37 @@ using UnityEngine;
 
 public class CoinBehaviour : MonoBehaviour
 {
+    MeshRenderer mymeshRenderer;
+
+    [SerializeField]
+    Material highlightMaterial; // Material to highlight the coin
+
+    Material originalMaterial; // Original material of the coin
 
     [SerializeField]
     int coinValue = 1;
-    
+
+    void Start()
+    {
+        mymeshRenderer = GetComponent<MeshRenderer>();
+
+        originalMaterial = mymeshRenderer.material; // Store the original material of the coin
+    }
+
+    // Method to highlight the coin
+    // This method will be called when the player is close enough to interact with the coin
+    public void highlightCoin()
+    {
+        mymeshRenderer.material = highlightMaterial;
+    }
+
+    // Method to unhighlight the coin
+    // This method will be called when the player moves away from the coin
+    public void unhighlightCoin()
+    {
+        mymeshRenderer.material = originalMaterial;
+    }
+
     // Method to collect the coin
     // This method will be called when the player interacts with the coin
     // It takes a PlayerBehaviour object as a parameter
@@ -15,7 +42,7 @@ public class CoinBehaviour : MonoBehaviour
     {
         // Logic for collecting the coin
         Debug.Log("Coin collected!");
-        
+
         // Add the coin value to the player's score
         // This is done by calling the ModifyScore method on the player object
         // The coinValue is passed as an argument to the method
