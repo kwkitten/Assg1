@@ -891,6 +891,7 @@ GameObject:
   - component: {fileID: 2043960257662835550}
   - component: {fileID: 7691061931482257186}
   - component: {fileID: 1401364952540628068}
+  - component: {fileID: 3390618148940598953}
   m_Layer: 0
   m_Name: Part6
   m_TagString: Untagged
@@ -950,8 +951,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a8c5b15c6f2bf4cbfdeee4276883cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  highlightMaterial: {fileID: 2100000, guid: 6b89826ec1ec1e243b3f043444cf4c36, type: 2}
   partValue: 1
+  collectSound: {fileID: 8300000, guid: 6ed75dbdb9e962a4f81893e0cd5a1a16, type: 3}
 --- !u!23 &1401364952540628068
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -997,6 +998,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &3390618148940598953
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3378890146468678906}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.39507, y: 0.26095983, z: 0.42913362}
+  m_Center: {x: 0.0004998705, y: -0.0027269397, z: -0.16291483}
 --- !u!1 &3585001365012996362
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,38 +2,11 @@ using UnityEngine;
 
 public class CollectableBehaviour : MonoBehaviour
 {
-    MeshRenderer mymeshRenderer;
-
-    [SerializeField]
-    Material highlightMaterial; // Material to highlight the part
-
-    Material originalMaterial; // Original material of the part
-
     [SerializeField]
     int partValue = 1;
 
-
-
-    void Start()
-    {
-        mymeshRenderer = GetComponent<MeshRenderer>();
-
-        originalMaterial = mymeshRenderer.material; // Store the original material of the part
-    }
-
-    // Method to highlight the part
-    // This method will be called when the player is close enough to interact with the part
-    public void highlightPart()
-    {
-        mymeshRenderer.material = highlightMaterial;
-    }
-
-    // Method to unhighlight the part
-    // This method will be called when the player moves away from the part
-    public void unhighlightPart()
-    {
-        mymeshRenderer.material = originalMaterial;
-    }
+    [SerializeField]
+    public AudioClip collectSound; // Sound to play when collecting a part
 
     // Method to collect the part
     // This method will be called when the player interacts with the part
@@ -44,15 +17,12 @@ public class CollectableBehaviour : MonoBehaviour
     // Update is called once per frame
     public void Collect(PlayerBehaviour player)
     {
-        // Logic for collecting the part
-        Debug.Log("Part collected!");
-
         // Add the part value to the player's score
-        // This is done by calling the ModifyScore method on the player object
-        // The partValue is passed as an argument to the method
-        // This allows the player to gain points when they collect the part
         player.ModifyScore(partValue);
+        // Play the collect sound if it is assigned
+        AudioSource.PlayClipAtPoint(collectSound, transform.position);
 
-        Destroy(gameObject); // Destroy the part object
+        Destroy(gameObject);
+        // Destroy the part object after collection
     }
 }
