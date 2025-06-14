@@ -1,5 +1,9 @@
 using UnityEngine;
 using UnityEngine.ProBuilder.MeshOperations;
+using TMPro;
+using UnityEngine.UI;
+using Microsoft.Unity.VisualStudio.Editor;
+using UnityEditor;
 
 public class PlayerBehaviour : MonoBehaviour
 {
@@ -8,41 +12,78 @@ public class PlayerBehaviour : MonoBehaviour
     int maxHealth = 10;
     CoinBehaviour currentCoin;
     DoorBehaviour currentDoor;
+    CollectableBehaviour currentCollectable;
     bool canInteract = false;
     public int playerScore = 0;
 
-    [SerializeField] // exposed variable
-    GameObject projectile;
+    // [SerializeField] // exposed variable
+    // GameObject projectile;
 
     [SerializeField]
     Transform spawnPoint;
 
-    [SerializeField]
-    float fireStrength = 1000f;
+    // [SerializeField]
+    // float fireStrength = 1000f;
 
     [SerializeField]
     float interactionDistance = 5f;
 
+    [SerializeField]
+    TextMeshProUGUI scoreText;
+
+    [SerializeField]
+    UnityEngine.UI.Image partTrackingIcon;
+
+    [SerializeField]
+    Sprite[] partTrackingSprites;
+
+    RaycastHit hitinfo;
+
+    int currentPartCount = 0;
+
+    void Start()
+    {
+        scoreText.text = "Parts Collected: " + playerScore.ToString(); // Initialize score text
+        partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Initialize part tracking icon
+    }
+
+
     void Update()
     {
-        RaycastHit hitinfo;
-
-        if ((Physics.Raycast(spawnPoint.position, spawnPoint.forward, out hitinfo, interactionDistance)))
+        if (Physics.Raycast(spawnPoint.position, spawnPoint.forward, out hitinfo, interactionDistance))
         {
             // If the raycast hits an object tagged as "Collectable" or "Door"
             if (hitinfo.collider.CompareTag("Collectable"))
             {
-                // Get the CoinBehaviour component from the hit object
-                // This allows the player to interact with the coin
-                // The CoinBehaviour script should handle the logic for collecting the coin
-                if (currentCoin != null)
+                Debug.Log("Player detected a collectable object: " + hitinfo.collider.name);
+                if (hitinfo.collider.GetComponent<CoinBehaviour>() != null)
                 {
-                    // If the player is already interacting with a coin, we can highlight it
-                    currentCoin.unhighlightCoin(); // Assuming this method exists to unhighlight the previous coin
+                    // If the object is a coin, we can interact with it
+                    // Get the CoinBehaviour component from the hit object
+                    // This allows the player to interact with the coin
+                    // The CoinBehaviour script should handle the logic for collecting the coin
+                    if (currentCoin != null)
+                    {
+                        currentCoin.unhighlightCoin(); // Assuming this method exists to unhighlight the previous coin
+                    }
+                    canInteract = true;
+                    currentCoin = hitinfo.collider.GetComponent<CoinBehaviour>();
+                    currentCoin.highlightCoin(); // Assuming this method exists to highlight the coin
                 }
-                canInteract = true;
-                currentCoin = hitinfo.collider.GetComponent<CoinBehaviour>();
-                currentCoin.highlightCoin(); // Assuming this method exists to highlight the coin
+                else if (hitinfo.collider.GetComponent<CollectableBehaviour>() != null)
+                {
+                    // If the object is a collectable part, we can interact with it
+                    // Get the CollectableBehaviour component from the hit object
+                    // This allows the player to interact with the collectable part
+                    // The CollectableBehaviour script should handle the logic for collecting the part
+                    if (currentCollectable != null)
+                    {
+                        currentCollectable.unhighlightPart(); // Assuming this method exists to unhighlight the previous collectable
+                    }
+                    canInteract = true;
+                    currentCollectable = hitinfo.collider.GetComponent<CollectableBehaviour>();
+                    currentCollectable.highlightPart(); // Assuming this method exists to highlight the collectable
+                }
             }
             else if (hitinfo.collider.CompareTag("Door"))
             {
@@ -50,7 +91,7 @@ public class PlayerBehaviour : MonoBehaviour
                 canInteract = true;
             }
         }
-        else if (currentCoin != null || currentDoor != null)
+        else if (currentCoin != null || currentDoor != null || currentCollectable != null)
         {
             // If the raycast does not hit any object, reset the interaction state
             // This prevents the player from interacting with a coin or door that is no longer in range
@@ -58,7 +99,14 @@ public class PlayerBehaviour : MonoBehaviour
             {
                 currentCoin = null; // Reset current coin after interaction
                 canInteract = false; // Reset interaction state
+                
                 currentCoin.unhighlightCoin(); // Assuming this method exists to unhighlight the coin
+            }
+            if (currentCollectable != null)
+            {
+                currentCollectable.unhighlightPart(); // Assuming this method exists to unhighlight the collectable
+                currentCollectable = null; // Reset current collectable after interaction
+                canInteract = false; // Reset interaction state
             }
             if (currentDoor != null)
             {
@@ -79,13 +127,52 @@ public class PlayerBehaviour : MonoBehaviour
             {
                 Debug.Log("Player is dead!");
                 // Optionally, you can destroy the player object or reset the game
-                // Destroy(gameObject);
+                Destroy(gameObject);
             }
             else
             {
                 health -= 2;
                 Debug.Log("Player has taken damage! Health: " + health);
             }
+        }
+
+        if (collision.gameObject.CompareTag("Collectable"))
+        {
+            // If the player collides with a collectable object, we can interact with it
+            // This will allow the player to collect the object
+            // The CollectableBehaviour script should handle the logic for collecting the object
+            if (collision.gameObject.GetComponent<CoinBehaviour>() != null)
+            {
+                currentCoin = collision.gameObject.GetComponent<CoinBehaviour>();
+                canInteract = true;
+                currentCoin.Collect(this);
+                currentCoin = null; // Reset current coin after interaction
+                // ++currentCoinCount; // Increment the coin count
+                // if (currentCoinCount >= coinTrackingSprites.Length)
+                // {
+                //     currentCoinCount = coinTrackingSprites.Length - 1; // Reset to last index if it exceeds the array length
+                // }
+                // coinTrackingIcon.sprite = coinTrackingSprites[currentCoinCount]; // Update the coin tracking icon
+            }
+            else if (collision.gameObject.GetComponent<CollectableBehaviour>() != null)
+            {
+                currentCollectable = collision.gameObject.GetComponent<CollectableBehaviour>();
+                canInteract = true;
+                currentCollectable.Collect(this);
+                currentCollectable = null; // Reset current collectable after interaction
+
+                ++currentPartCount; // Increment the parts count
+                if (currentPartCount >= partTrackingSprites.Length)
+                {
+                    currentPartCount = partTrackingSprites.Length - 1; // Reset to last index if it exceeds the array length
+                }
+                partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Update the part tracking icon
+            }
+        }
+        else if (collision.gameObject.CompareTag("Door"))
+        {
+            currentDoor = collision.gameObject.GetComponent<DoorBehaviour>();
+            canInteract = true;
         }
     }
 
@@ -101,6 +188,13 @@ public class PlayerBehaviour : MonoBehaviour
                 // Pass the player object as an argument
                 currentCoin.Collect(this);
                 currentCoin = null; // Reset current coin after interaction
+                // ++currentCoinCount; // Increment the coin count
+                // if (currentCoinCount >= coinTrackingSprites.Length)
+                // {
+                //     currentCoinCount = coinTrackingSprites.Length - 1; // Reset to last index if it exceeds the array length
+                // }
+                // coinTrackingIcon.sprite = coinTrackingSprites[currentCoinCount]; // Update the coin tracking icon
+
             }
             else if (currentDoor != null)
             {
@@ -108,6 +202,19 @@ public class PlayerBehaviour : MonoBehaviour
                 currentDoor.Interact();
                 currentDoor = null; // Reset current door after interaction
                 canInteract = false; // Reset interaction state
+            }
+            else if (currentCollectable != null)
+            {
+                Debug.Log("Interacting with collectable");
+                currentCollectable.Collect(this);
+                currentCollectable = null; // Reset current collectable after interaction
+
+                ++currentPartCount; // Increment the parts count
+                if (currentPartCount >= partTrackingSprites.Length)
+                {
+                    currentPartCount = partTrackingSprites.Length - 1; // Reset to last index if it exceeds the array length
+                }
+                partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Update the part tracking icon
             }
         }
 
@@ -124,7 +231,7 @@ public class PlayerBehaviour : MonoBehaviour
     public void ModifyScore(int amount)
     {
         playerScore += amount;
-        Debug.Log("Player score: " + playerScore);
+        scoreText.text = "Score: " + playerScore.ToString(); // Update score text
     }
 
     // Method to modify the player's health
@@ -147,6 +254,7 @@ public class PlayerBehaviour : MonoBehaviour
         }
     }
 
+
     // Collision Callback for when the player collides with another object
     void OnCollisionStay(Collision collision)
     {
@@ -163,19 +271,35 @@ public class PlayerBehaviour : MonoBehaviour
     // Trigger Callback for when the player enters a trigger collider
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log(other.gameObject.name);
         // Check if the player detects a trigger collider tagged as "Collectable" or "Door"
         if (other.CompareTag("Collectable"))
         {
-            // Set the canInteract flag to true
-            // Get the CoinBehaviour component from the detected object
-            canInteract = true;
-            currentCoin = other.GetComponent<CoinBehaviour>();
+            Debug.Log(other.gameObject.name);
+            if (other.GetComponent<CoinBehaviour>() != null)
+            {
+                // If the object is a coin, we can interact with it
+                // Get the CoinBehaviour component from the detected object
+                // Set the canInteract flag to true
+                // This allows the player to interact with the coin
+                canInteract = true;
+                currentCoin = other.GetComponent<CoinBehaviour>();
+
+            }
+            else if (other.GetComponent<CollectableBehaviour>() != null)
+            {
+                // If the object is a collectable part, we can interact with it
+                // Get the CollectableBehaviour component from the detected object
+                // Set the canInteract flag to true
+                // This allows the player to interact with the collectable part
+                canInteract = true;
+                currentCollectable = other.GetComponent<CollectableBehaviour>();
+            }
         }
         else if (other.CompareTag("Door"))
         {
             canInteract = true;
             currentDoor = other.gameObject.GetComponent<DoorBehaviour>();
+            Debug.Log(other.gameObject.name);
         }
     }
 
@@ -195,6 +319,18 @@ public class PlayerBehaviour : MonoBehaviour
                 currentCoin = null;
             }
         }
+        else if (currentCollectable != null)
+        {
+            // If the object that exited the trigger is the same as the current collectable
+            if (other.gameObject == currentCollectable.gameObject)
+            {
+                // Set the canInteract flag to false
+                // Set the current collectable to null
+                // This prevents the player from interacting with the collectable
+                canInteract = false;
+                currentCollectable = null;
+            }
+        }
         else if (currentDoor != null)
         {
             // If the object that exited the trigger is the same as the current door
@@ -208,21 +344,24 @@ public class PlayerBehaviour : MonoBehaviour
             }
         }
     }
+    
 
-    void OnFire()
-    {
-        // Instantiate projectile at the spawn point's position and rotation
-        // Store the projectile to the 'newProjectile' variable
-        GameObject newProjectile = Instantiate(projectile, spawnPoint.position, spawnPoint.rotation);
+    // Uncomment the following method if you want to implement projectile firing functionality
+    // This method is called when the player fires a projectile
+    // void OnFire()
+    // {
+    //     // Instantiate projectile at the spawn point's position and rotation
+    //     // Store the projectile to the 'newProjectile' variable
+    //     GameObject newProjectile = Instantiate(projectile, spawnPoint.position, spawnPoint.rotation);
 
-        // Create a new Vector3 variable 'fireForce'
-        // set it to the forward direction of the spawn point muiltipled by the fire strength
-        // This will determine the direction and speed of the projectile
-        Vector3 fireForce = spawnPoint.forward * fireStrength;
+    //     // Create a new Vector3 variable 'fireForce'
+    //     // set it to the forward direction of the spawn point muiltipled by the fire strength
+    //     // This will determine the direction and speed of the projectile
+    //     Vector3 fireForce = spawnPoint.forward * fireStrength;
 
-        // Get the Rigidbody component of the new projectile
-        // Add a force to the projectile defined by the fireForce variable
-        newProjectile.GetComponent<Rigidbody>().AddForce(fireForce);
-    }
+    //     // Get the Rigidbody component of the new projectile
+    //     // Add a force to the projectile defined by the fireForce variable
+    //     newProjectile.GetComponent<Rigidbody>().AddForce(fireForce);
+    // }
 
 }

@@ -44,16 +44,7 @@
                 {
                     "name": "Interact",
                     "type": "Button",
-                    "id": "9e4496d3-4336-447b-ac47-7ef619d7717b",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Fire",
-                    "type": "Button",
-                    "id": "6fdd4a4d-23bd-4ffb-a809-61f0254a2708",
+                    "id": "6a38075f-aa6e-4c09-80b3-00699adc6b5b",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -239,23 +230,12 @@
                 },
                 {
                     "name": "",
-                    "id": "c03f355a-f162-4bba-b752-1b41c4f87144",
+                    "id": "c7ea6882-f524-4a91-a006-1fb08ee77d6e",
                     "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";KeyboardMouse",
                     "action": "Interact",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9f19be2d-296e-4a54-90e2-bd4d580172de",
-                    "path": "<Keyboard>/f",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Fire",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
