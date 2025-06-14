@@ -1,3 +1,9 @@
+/*
+* Author: Katriel Wong
+* Date: 2025-06-15
+* Description: This script handles the door interaction in a Unity game.
+*/
+
 using UnityEngine;
 
 public class DoorBehaviour : MonoBehaviour
@@ -43,10 +49,6 @@ public class DoorBehaviour : MonoBehaviour
                 doorOpen = true; // Set the door state to open
                 doorAudioSource.Play(); // Play the door sound
             }
-        }
-        else if (playerScore.playerScore >= 6)
-        {
-            playerScore.notificationText.text = "You have collected all parts! Congratulations! You have completed the level."; // Update the notification text
         }
     }
 

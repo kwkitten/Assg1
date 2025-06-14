@@ -68,7 +68,6 @@ public class PlayerBehaviour : MonoBehaviour
             // If the raycast hits an object tagged as "Collectable" or "Door"
             if (hitinfo.collider.CompareTag("Collectable"))
             {
-                Debug.Log("Player detected a collectable object: " + hitinfo.collider.name);
                 if (hitinfo.collider.GetComponent<CollectableBehaviour>() != null)
                 {
                     // If the object is a collectable part, we can interact with it
@@ -164,15 +163,18 @@ public class PlayerBehaviour : MonoBehaviour
             // Check if the player has detected a collectable or a door
              if (currentDoor != null)
             {
-                Debug.Log("Player is interacting with a door");
                 currentDoor.Interact();
+                if (playerScore >= 6)
+                {
+                    notificationText.text = "You have collected all parts! Congratulations! You have completed the level."; // Update the notification text
+                }
                 currentDoor = null; // Reset current door after interaction
                 canInteract = false; // Reset interaction state
             }
             else if (currentCollectable != null)
             {
-                Debug.Log("Interacting with collectable");
                 currentCollectable.Collect(this);
+                AudioSource.PlayClipAtPoint(currentCollectable.collectSound, transform.position); // Play the collect sound if it is assigned
                 currentCollectable = null; // Reset current collectable after interaction
 
                 ++currentPartCount; // Increment the parts count
@@ -223,16 +225,9 @@ public class PlayerBehaviour : MonoBehaviour
             // Instead of destroying the player object, we can respawn the player at a designated respawn point
             // Teleport the player back to the respawn point instead of destroying and instantiating
             // Move the player above the respawn pad
-            if (RespawnPoint != null)
-            {
-                Vector3 respawnAbove = RespawnPoint.transform.position + Vector3.up * 1.5f;
-                transform.SetPositionAndRotation(respawnAbove, RespawnPoint.transform.rotation);
-                currentHealth = maxHealth; // Optionally reset health
-            }
-            else
-            {
-                Debug.LogError("RespawnPoint is not assigned in the Inspector!");
-            }
+            Vector3 respawnAbove = RespawnPoint.transform.position + Vector3.up * 1.5f;
+            transform.SetPositionAndRotation(respawnAbove, RespawnPoint.transform.rotation);
+            currentHealth = maxHealth; // Optionally reset health
         }
     }
 
@@ -257,7 +252,6 @@ public class PlayerBehaviour : MonoBehaviour
         {
             canInteract = true;
             currentDoor = other.gameObject.GetComponent<DoorBehaviour>();
-            Debug.Log(other.gameObject.name);
         }
     }
 

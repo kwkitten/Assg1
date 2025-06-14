@@ -1,3 +1,9 @@
+/*
+* Author: Katriel Wong
+* Date: 2025-06-15
+* Description: This script handles the collection of parts in a Unity game.
+*/
+
 using UnityEngine;
 
 public class CollectableBehaviour : MonoBehaviour
