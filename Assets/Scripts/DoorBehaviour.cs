@@ -28,13 +28,13 @@ public class DoorBehaviour : MonoBehaviour
     public void Interact()
     {
         Vector3 doorRotation = transform.eulerAngles;
-        if (playerScore.playerScore < 2)
-        {
-            playerScore.notificationText.text = "You need at least 2 parts to open the door!"; // Update the notification text
-            return; // Exit the method if the player does not have enough parts
-        }
-        else if (playerScore.playerScore >= 2)
-        {
+        // if (playerScore.playerScore < 2)
+        // {
+        //     playerScore.notificationText.text = "You need at least 2 parts to open the door!"; // Update the notification text
+        //     return; // Exit the method if the player does not have enough parts
+        // }
+        // else if (playerScore.playerScore >= 2)
+        // {
             if (doorOpen == true)
             {
                 doorRotation.y = -90f; // Reset the door rotation to closed position
@@ -45,11 +45,11 @@ public class DoorBehaviour : MonoBehaviour
             {
                 doorRotation.y += -90f; // Rotate the door by 90 degrees
                 transform.eulerAngles = doorRotation; // Apply the rotation
-                playerScore.notificationText.text = "You have successfully opened the door!"; // Update the notification text
+                // playerScore.notificationText.text = "You have successfully opened the door!"; // Update the notification text
                 doorOpen = true; // Set the door state to open
                 doorAudioSource.Play(); // Play the door sound
             }
-        }
+        // }
     }
 
 }

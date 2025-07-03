@@ -7,6 +7,8 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+// using System.Collections.Generic;
 public class PlayerBehaviour : MonoBehaviour
 {
     int currentHealth = 200; // Current health of the player
@@ -14,8 +16,8 @@ public class PlayerBehaviour : MonoBehaviour
     int damage = 0; // Variable to track the damage taken by the player
     public Canvas alternateCanvas;
 
-    [SerializeField]
-    int totalParts = 6; // Total number of parts to collect in the game
+    // [SerializeField]
+    // int totalParts = 6; // Total number of parts to collect in the game
     DoorBehaviour currentDoor; // Reference to the current door the player is interacting with
     CollectableBehaviour currentCollectable; // Reference to the current collectable the player is interacting with
     bool canInteract = false; // Flag to indicate if the player can interact with a collectable or door
@@ -28,16 +30,13 @@ public class PlayerBehaviour : MonoBehaviour
     float interactionDistance = 5f; // Distance within which the player can interact with collectables or doors
 
     [SerializeField]
-    TextMeshProUGUI scoreText; // Text to display the player's part count
-
-    [SerializeField]
     TextMeshProUGUI partLeftText; // Text to display the player's parts left
 
     [SerializeField]
     TextMeshProUGUI healthText; // Text to display the player's health
 
-    [SerializeField]
-    public TextMeshProUGUI notificationText; // Text to display notifications to the player 
+    // [SerializeField]
+    // public TextMeshProUGUI notificationText; // Text to display notifications to the player 
 
     [SerializeField]
     Image partTrackingIcon; // UI Image to track the number of parts collected
@@ -52,13 +51,18 @@ public class PlayerBehaviour : MonoBehaviour
     [SerializeField]
     GameObject RespawnPoint; // Reference to the respawn point
 
+    [SerializeField]
+    float fireStrength = 1000f;
+
+    [SerializeField] // exposed variable
+    GameObject projectile;
+
     void Start()
     {
-        scoreText.text = "Parts Collected: " + playerScore.ToString(); // Initialize score text
-        healthText.text = "Health: " + maxHealth.ToString(); // Initialize health text
-        partLeftText.text = "Parts Left: " + totalParts.ToString(); // Initialize parts left text
-        notificationText.text = ""; // Initialize notification text
-        partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Initialize part tracking icon
+        // healthText.text = "Health: " + maxHealth.ToString(); // Initialize health text
+        // partLeftText.text = "Parts Left: " + totalParts.ToString(); // Initialize parts left text
+        // notificationText.text = ""; // Initialize notification text
+        // partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Initialize part tracking icon
     }
 
     void Update()
@@ -70,12 +74,20 @@ public class PlayerBehaviour : MonoBehaviour
             {
                 if (hitinfo.collider.GetComponent<CollectableBehaviour>() != null)
                 {
-                    // If the object is a collectable part, we can interact with it
-                    // Get the CollectableBehaviour component from the hit object
-                    // This allows the player to interact with the collectable part
-                    // The CollectableBehaviour script should handle the logic for collecting the part
-                    canInteract = true;
-                    currentCollectable = hitinfo.collider.GetComponent<CollectableBehaviour>();
+                    if (currentCollectable != null)
+                    {
+                        currentCollectable.unhighlightPart(); // Assuming this method exists to unhighlight the previous collectable
+                    }
+                    // else
+                    // {
+                        // If the object is a collectable part, we can interact with it
+                        // Get the CollectableBehaviour component from the hit object
+                        // This allows the player to interact with the collectable part
+                        // The CollectableBehaviour script should handle the logic for collecting the part
+                        canInteract = true;
+                        currentCollectable = hitinfo.collider.GetComponent<CollectableBehaviour>();
+                        currentCollectable.highlightPart(); // Assuming this method exists to highlight the collectable 
+                    // }
                 }
             }
             else if (hitinfo.collider.CompareTag("Door"))
@@ -90,10 +102,11 @@ public class PlayerBehaviour : MonoBehaviour
             // This prevents the player from interacting with a collectable or door that is no longer in range
             if (currentCollectable != null)
             {
+                currentCollectable.unhighlightPart(); // Assuming this method exists to unhighlight the collectable
                 currentCollectable = null; // Reset current collectable after interaction
                 canInteract = false; // Reset interaction state
             }
-            if (currentDoor != null)
+            else if (currentDoor != null)
             {
                 //currentDoor.unhighlightDoor(); // Assuming this method exists to unhighlight the door
                 currentDoor = null; // Reset current door after interaction
@@ -105,7 +118,6 @@ public class PlayerBehaviour : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         Debug.Log("Player collided with: " + collision.gameObject.name);
-
         if (collision.gameObject.CompareTag("Hazard")) // If the player collides with a hazard object, we can apply damage
         {
             damage += 2;
@@ -138,8 +150,8 @@ public class PlayerBehaviour : MonoBehaviour
         {
             currentCollectable = collision.gameObject.GetComponent<CollectableBehaviour>();
             canInteract = true;
-            currentCollectable.Collect(this);
-            AudioSource.PlayClipAtPoint(currentCollectable.collectSound, transform.position); // Play the collect sound if it is assigned
+            currentCollectable.Collect(this); // Call the Collect method on the collectable object, passing this PlayerBehaviour instance
+            // AudioSource.PlayClipAtPoint(currentCollectable.collectSound, transform.position); // Play the collect sound if it is assigned
             currentCollectable = null; // Reset current collectable after interaction
 
             ++currentPartCount; // Increment the parts count
@@ -155,26 +167,42 @@ public class PlayerBehaviour : MonoBehaviour
             canInteract = true;
         }
     }
+    // Uncomment the following method if you want to implement projectile firing functionality
+    // This method is called when the player fires a projectile
+    void OnFire()
+    {
+        // Instantiate projectile at the spawn point's position and rotation
+        // Store the projectile to the 'newProjectile' variable
+        GameObject newProjectile = Instantiate(projectile, spawnPoint.position, spawnPoint.rotation);
 
+        // Create a new Vector3 variable 'fireForce'
+        // set it to the forward direction of the spawn point muiltipled by the fire strength
+        // This will determine the direction and speed of the projectile
+        Vector3 fireForce = spawnPoint.forward * fireStrength;
+
+        // Get the Rigidbody component of the new projectile
+        // Add a force to the projectile defined by the fireForce variable
+        newProjectile.GetComponent<Rigidbody>().AddForce(fireForce);
+    }
     void OnInteract()
     {
         if (canInteract)
         {
             // Check if the player has detected a collectable or a door
-             if (currentDoor != null)
+            if (currentDoor != null)
             {
                 currentDoor.Interact();
-                if (playerScore >= 6)
-                {
-                    notificationText.text = "You have collected all parts! Congratulations! You have completed the level."; // Update the notification text
-                }
+                // if (playerScore >= 6)
+                // {
+                //     notificationText.text = "You have collected all parts! Congratulations! You have completed the level."; // Update the notification text
+                // }
                 currentDoor = null; // Reset current door after interaction
                 canInteract = false; // Reset interaction state
             }
             else if (currentCollectable != null)
             {
                 currentCollectable.Collect(this);
-                AudioSource.PlayClipAtPoint(currentCollectable.collectSound, transform.position); // Play the collect sound if it is assigned
+                // AudioSource.PlayClipAtPoint(currentCollectable.collectSound, transform.position); // Play the collect sound if it is assigned
                 currentCollectable = null; // Reset current collectable after interaction
 
                 ++currentPartCount; // Increment the parts count
@@ -185,25 +213,13 @@ public class PlayerBehaviour : MonoBehaviour
                 partTrackingIcon.sprite = partTrackingSprites[currentPartCount]; // Update the part tracking icon
             }
         }
-
         else
         {
             Debug.Log("Player is not interacting with an object");
         }
     }
 
-    // Method to modify the player's score
-    // This method takes an integer amount as a parameter
-    // It adds the amount to the player's current score
-    // The method is public so it can be accessed from other scripts
-    public void ModifyScore(int amount)
-    {
-        playerScore += amount;
-        scoreText.text = "Parts Collected: " + playerScore.ToString(); // Update score text
-        totalParts -= amount; // Reduce the total parts left by the collected amount
-        partLeftText.text = "Parts Left: " + totalParts.ToString(); // Update parts left text
-    }
-
+ 
     // Collision Callback for when the player collides with another object
     void OnCollisionStay(Collision collision)
     {
@@ -221,7 +237,7 @@ public class PlayerBehaviour : MonoBehaviour
         else if (collision.gameObject.CompareTag("InstantDeath"))
         {
             Debug.Log("Player has hit an instant death object!"); // Log a message indicating the player has hit an instant death object
-            notificationText.text = "You have died"; // Update the notification text
+            // notificationText.text = "You have died"; // Update the notification text
             // Instead of destroying the player object, we can respawn the player at a designated respawn point
             // Teleport the player back to the respawn point instead of destroying and instantiating
             // Move the player above the respawn pad
